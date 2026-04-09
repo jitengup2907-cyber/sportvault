@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Download, Calendar } from "lucide-react";
+import { Plus, Loader2, Download, Calendar, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,9 +8,12 @@ import { toast } from "sonner";
 import HeroSection from "@/components/HeroSection";
 import PlayerForm from "@/components/PlayerForm";
 import ReportCard from "@/components/ReportCard";
+import LogoUpload from "@/components/LogoUpload";
+import ComparisonView from "@/components/ComparisonView";
 import { PlayerData, AcademyInfo, GeneratedReport, ReportType, RATING_CATEGORIES } from "@/types/player";
 import { generateReport } from "@/lib/ai";
 import { generateAllPDFs } from "@/lib/pdf";
+import { saveReport, getPlayerHistory, getAllPlayerNames } from "@/lib/history";
 
 function createEmptyPlayer(): PlayerData {
   const ratings: Record<string, number> = {};
@@ -40,6 +43,7 @@ function getDefaultPeriodLabel(type: ReportType): string {
 
 const Index = () => {
   const [showForm, setShowForm] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
   const [players, setPlayers] = useState<PlayerData[]>([createEmptyPlayer()]);
   const [academy, setAcademy] = useState<AcademyInfo>({
     academyName: "",
@@ -50,8 +54,11 @@ const Index = () => {
   const [reports, setReports] = useState<GeneratedReport[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [selectedComparePlayer, setSelectedComparePlayer] = useState<string>("");
   const formRef = useRef<HTMLDivElement>(null);
   const reportsRef = useRef<HTMLDivElement>(null);
+
+  const savedPlayerNames = getAllPlayerNames();
 
   const handleStart = () => {
     setShowForm(true);
@@ -115,7 +122,19 @@ const Index = () => {
       try {
         setProgress({ current: i + 1, total: players.length });
         const reportText = await generateReport(players[i], academy, supabaseUrl, supabaseKey);
-        generated.push({ player: players[i], reportText });
+        const now = new Date().toISOString();
+        generated.push({ player: players[i], reportText, generatedAt: now });
+
+        // Save to history
+        saveReport({
+          periodLabel: academy.periodLabel,
+          reportType: academy.reportType,
+          academyName: academy.academyName,
+          playerName: players[i].playerName,
+          ratings: { ...players[i].ratings },
+          reportText,
+          generatedAt: now,
+        });
       } catch (err) {
         console.error(err);
         toast.error(`Failed to generate report for ${players[i].playerName}`);
@@ -126,13 +145,13 @@ const Index = () => {
     setIsGenerating(false);
 
     if (generated.length > 0) {
-      toast.success(`${generated.length} report(s) generated!`);
+      toast.success(`${generated.length} report(s) generated & saved!`);
       setTimeout(() => reportsRef.current?.scrollIntoView({ behavior: "smooth" }), 200);
     }
   };
 
-  const handleDownloadAll = () => {
-    generateAllPDFs(reports, academy);
+  const handleDownloadAll = async () => {
+    await generateAllPDFs(reports, academy);
     toast.success("Downloading all PDFs...");
   };
 
@@ -164,9 +183,7 @@ const Index = () => {
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Report Type</label>
                   <Select value={academy.reportType} onValueChange={(v) => handleReportTypeChange(v as ReportType)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="monthly">
                         <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Monthly Report</span>
@@ -182,6 +199,10 @@ const Index = () => {
                   <Input placeholder={academy.reportType === "monthly" ? "e.g. April 2026" : "e.g. 2025–2026"} value={academy.periodLabel} onChange={(e) => setAcademy((a) => ({ ...a, periodLabel: e.target.value }))} />
                 </div>
               </div>
+              <LogoUpload
+                logoDataUrl={academy.logoDataUrl}
+                onLogoChange={(url) => setAcademy((a) => ({ ...a, logoDataUrl: url }))}
+              />
             </div>
 
             {/* Player Forms */}
@@ -207,8 +228,9 @@ const Index = () => {
         )}
       </AnimatePresence>
 
+      {/* Reports Section */}
       {reports.length > 0 && (
-        <motion.div ref={reportsRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto px-4 pb-20">
+        <motion.div ref={reportsRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto px-4 pb-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-display text-2xl font-bold text-foreground">
               Generated Reports ({reports.length})
@@ -223,6 +245,49 @@ const Index = () => {
             ))}
           </div>
         </motion.div>
+      )}
+
+      {/* Comparison Section */}
+      {savedPlayerNames.length > 0 && (
+        <div className="max-w-4xl mx-auto px-4 pb-20">
+          <div className="rounded-xl border bg-card p-5 md:p-6 shadow-sm mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" /> Progress Comparison
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowComparison(!showComparison)}
+              >
+                {showComparison ? "Hide" : "Show"}
+              </Button>
+            </div>
+
+            {showComparison && (
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Select Player</label>
+                  <Select value={selectedComparePlayer} onValueChange={setSelectedComparePlayer}>
+                    <SelectTrigger><SelectValue placeholder="Choose a player..." /></SelectTrigger>
+                    <SelectContent>
+                      {savedPlayerNames.map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedComparePlayer && (
+                  <ComparisonView
+                    playerName={selectedComparePlayer}
+                    history={getPlayerHistory(selectedComparePlayer)}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
