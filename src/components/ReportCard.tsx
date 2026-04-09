@@ -1,15 +1,18 @@
 import { GeneratedReport, AcademyInfo, RATING_CATEGORIES } from "@/types/player";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, Star, MessageCircle } from "lucide-react";
+import { Copy, Download, Star, MessageCircle, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { generatePDF } from "@/lib/pdf";
+import { generatePlayerDocx } from "@/lib/docx";
+import { ReportTemplate } from "@/types/template";
 
 interface ReportCardProps {
   report: GeneratedReport;
   academy: AcademyInfo;
+  templateId: string;
 }
 
-const ReportCard = ({ report, academy }: ReportCardProps) => {
+const ReportCard = ({ report, academy, templateId }: ReportCardProps) => {
   const { player, reportText } = report;
 
   const handleCopy = () => {
@@ -17,14 +20,12 @@ const ReportCard = ({ report, academy }: ReportCardProps) => {
     toast.success("Report copied to clipboard!");
   };
 
-  const handleDownload = () => {
-    generatePDF(report, academy);
-  };
+  const handleDownloadPDF = () => generatePDF(report, academy, templateId);
+  const handleDownloadDocx = () => generatePlayerDocx(report, academy, templateId);
 
   const handleWhatsApp = () => {
     const text = `📋 *${academy.academyName}*\n*${academy.reportType === "annual" ? "Annual" : "Monthly"} Report Card — ${academy.periodLabel}*\n\n👤 *${player.playerName}* | ${player.sport} | ${player.position}\n📅 Attendance: ${player.sessionsAttended}/${player.totalSessions} sessions\n\n${reportText}\n\n— Coach ${academy.coachName}`;
-    const encoded = encodeURIComponent(text);
-    window.open(`https://wa.me/?text=${encoded}`, "_blank");
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   const renderStars = (rating: number) => (
@@ -48,7 +49,6 @@ const ReportCard = ({ report, academy }: ReportCardProps) => {
 
   return (
     <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-      {/* Header */}
       <div className="bg-primary/5 px-5 py-4 border-b">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -72,7 +72,6 @@ const ReportCard = ({ report, academy }: ReportCardProps) => {
         </div>
       </div>
 
-      {/* Ratings breakdown */}
       <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4 border-b">
         {(["on-pitch", "off-pitch"] as const).map((group) => (
           <div key={group}>
@@ -91,21 +90,22 @@ const ReportCard = ({ report, academy }: ReportCardProps) => {
         ))}
       </div>
 
-      {/* AI Report */}
       <div className="px-5 py-4 border-b">
         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">📝 Coach's Report</h4>
         <div className="bg-secondary/40 rounded-lg p-4 text-sm leading-relaxed text-foreground whitespace-pre-line">{reportText}</div>
       </div>
 
-      {/* Actions */}
       <div className="px-5 py-3 flex flex-wrap gap-2">
         <Button variant="outline" size="sm" onClick={handleCopy}>
           <Copy className="h-4 w-4 mr-1.5" /> Copy
         </Button>
-        <Button size="sm" onClick={handleDownload}>
+        <Button size="sm" onClick={handleDownloadPDF}>
           <Download className="h-4 w-4 mr-1.5" /> PDF
         </Button>
-        <Button size="sm" onClick={handleWhatsApp} className="bg-[#25D366] hover:bg-[#1da851] text-[#fff]">
+        <Button size="sm" variant="outline" onClick={handleDownloadDocx}>
+          <FileText className="h-4 w-4 mr-1.5" /> Word
+        </Button>
+        <Button size="sm" onClick={handleWhatsApp} className="bg-[#25D366] hover:bg-[#1da851] text-white">
           <MessageCircle className="h-4 w-4 mr-1.5" /> WhatsApp
         </Button>
       </div>
