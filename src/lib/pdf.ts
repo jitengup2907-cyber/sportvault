@@ -12,7 +12,26 @@ function computeAvg(ratings: Record<string, number>, group: string): number {
   return rated.reduce((sum, c) => sum + (ratings[c.key] || 0), 0) / rated.length;
 }
 
-export function generatePDF(report: GeneratedReport, academy: AcademyInfo) {
+function addLogoToDoc(doc: jsPDF, logoDataUrl: string, x: number, y: number, maxH: number): Promise<void> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const ratio = img.width / img.height;
+      const h = maxH;
+      const w = h * ratio;
+      try {
+        doc.addImage(logoDataUrl, "PNG", x, y, w, h);
+      } catch {
+        // If addImage fails, skip logo
+      }
+      resolve();
+    };
+    img.onerror = () => resolve();
+    img.src = logoDataUrl;
+  });
+}
+
+export async function generatePDF(report: GeneratedReport, academy: AcademyInfo) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const { player, reportText } = report;
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -28,14 +47,22 @@ export function generatePDF(report: GeneratedReport, academy: AcademyInfo) {
   // === HEADER BAR ===
   doc.setFillColor(37, 139, 88);
   doc.rect(0, 0, pageWidth, 32, "F");
+
+  // Logo
+  let logoOffset = 0;
+  if (academy.logoDataUrl) {
+    await addLogoToDoc(doc, academy.logoDataUrl, margin, 4, 24);
+    logoOffset = 28;
+  }
+
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text(academy.academyName || "Sports Academy", margin, 15);
+  doc.text(academy.academyName || "Sports Academy", margin + logoOffset, 15);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   const typeLabel = academy.reportType === "annual" ? "Annual" : "Monthly";
-  doc.text(`${typeLabel} Player Report Card — ${academy.periodLabel}`, margin, 25);
+  doc.text(`${typeLabel} Player Report Card — ${academy.periodLabel}`, margin + logoOffset, 25);
 
   // Overall score badge
   doc.setFillColor(255, 255, 255);
@@ -70,7 +97,6 @@ export function generatePDF(report: GeneratedReport, academy: AcademyInfo) {
   const dimLabels: Record<string, string> = { physical: "Physical", mental: "Mental", social: "Social" };
 
   for (const group of groups) {
-    // Group header
     doc.setFillColor(240, 248, 240);
     doc.rect(margin, y - 3.5, contentWidth, 6, "F");
     doc.setFont("helvetica", "bold");
@@ -94,6 +120,7 @@ export function generatePDF(report: GeneratedReport, academy: AcademyInfo) {
       doc.setTextColor(50, 70, 50);
 
       for (const cat of cats) {
+        if (y > pageHeight - 20) { doc.addPage(); y = 20; }
         const rating = player.ratings[cat.key] || 0;
         doc.text(cat.label, margin + 4, y);
         doc.text(renderStarsText(rating), margin + contentWidth - 30, y);
@@ -104,16 +131,11 @@ export function generatePDF(report: GeneratedReport, academy: AcademyInfo) {
     y += 2;
   }
 
-  // === DIVIDER ===
   doc.setDrawColor(200, 220, 200);
   doc.line(margin, y, pageWidth - margin, y);
   y += 6;
 
-  // Check if we need a new page for the report text
-  if (y > pageHeight - 80) {
-    doc.addPage();
-    y = 20;
-  }
+  if (y > pageHeight - 80) { doc.addPage(); y = 20; }
 
   // === REPORT TEXT ===
   doc.setFont("helvetica", "bold");
@@ -128,20 +150,13 @@ export function generatePDF(report: GeneratedReport, academy: AcademyInfo) {
   const lines = doc.splitTextToSize(reportText, contentWidth);
 
   for (const line of lines) {
-    if (y > pageHeight - 30) {
-      doc.addPage();
-      y = 20;
-    }
+    if (y > pageHeight - 30) { doc.addPage(); y = 20; }
     doc.text(line, margin, y);
     y += 4.5;
   }
 
   y += 8;
-
-  if (y > pageHeight - 30) {
-    doc.addPage();
-    y = 20;
-  }
+  if (y > pageHeight - 30) { doc.addPage(); y = 20; }
 
   // === FOOTER ===
   doc.setDrawColor(200, 220, 200);
@@ -163,6 +178,8 @@ export function generatePDF(report: GeneratedReport, academy: AcademyInfo) {
   doc.save(`${player.playerName.replace(/\s+/g, "_")}_Report.pdf`);
 }
 
-export function generateAllPDFs(reports: GeneratedReport[], academy: AcademyInfo) {
-  reports.forEach((report) => generatePDF(report, academy));
+export async function generateAllPDFs(reports: GeneratedReport[], academy: AcademyInfo) {
+  for (const report of reports) {
+    await generatePDF(report, academy);
+  }
 }
