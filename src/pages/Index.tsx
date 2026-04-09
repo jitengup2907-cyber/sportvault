@@ -1,17 +1,20 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Loader2, Download } from "lucide-react";
+import { Plus, Loader2, Download, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import HeroSection from "@/components/HeroSection";
 import PlayerForm from "@/components/PlayerForm";
 import ReportCard from "@/components/ReportCard";
-import { PlayerData, AcademyInfo, GeneratedReport } from "@/types/player";
+import { PlayerData, AcademyInfo, GeneratedReport, ReportType, RATING_CATEGORIES } from "@/types/player";
 import { generateReport } from "@/lib/ai";
 import { generateAllPDFs } from "@/lib/pdf";
 
 function createEmptyPlayer(): PlayerData {
+  const ratings: Record<string, number> = {};
+  RATING_CATEGORIES.forEach((c) => { ratings[c.key] = 0; });
   return {
     id: crypto.randomUUID(),
     playerName: "",
@@ -20,19 +23,30 @@ function createEmptyPlayer(): PlayerData {
     position: "",
     sessionsAttended: 0,
     totalSessions: 0,
-    skillRating: 0,
-    fitnessRating: 0,
-    teamworkRating: 0,
+    ratings,
     strengthNote: "",
     improvementNote: "",
     standoutMoment: "",
+    goals: "",
   };
+}
+
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function getDefaultPeriodLabel(type: ReportType): string {
+  const now = new Date();
+  if (type === "monthly") return `${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`;
+  return `${now.getFullYear() - 1}–${now.getFullYear()}`;
 }
 
 const Index = () => {
   const [showForm, setShowForm] = useState(false);
   const [players, setPlayers] = useState<PlayerData[]>([createEmptyPlayer()]);
-  const [academy, setAcademy] = useState<AcademyInfo>({ academyName: "", coachName: "" });
+  const [academy, setAcademy] = useState<AcademyInfo>({
+    academyName: "",
+    coachName: "",
+    reportType: "monthly",
+    periodLabel: getDefaultPeriodLabel("monthly"),
+  });
   const [reports, setReports] = useState<GeneratedReport[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -44,16 +58,17 @@ const Index = () => {
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
   };
 
-  const handlePlayerChange = useCallback((id: string, field: keyof PlayerData, value: string | number) => {
+  const handlePlayerChange = useCallback((id: string, updates: Partial<PlayerData>) => {
     setPlayers((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, [field]: value } : p))
+      prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
     );
   }, []);
 
   const addPlayer = () => setPlayers((prev) => [...prev, createEmptyPlayer()]);
+  const removePlayer = (id: string) => setPlayers((prev) => prev.filter((p) => p.id !== id));
 
-  const removePlayer = (id: string) => {
-    setPlayers((prev) => prev.filter((p) => p.id !== id));
+  const handleReportTypeChange = (type: ReportType) => {
+    setAcademy((a) => ({ ...a, reportType: type, periodLabel: getDefaultPeriodLabel(type) }));
   };
 
   const validate = (): boolean => {
@@ -63,11 +78,12 @@ const Index = () => {
     }
     for (const p of players) {
       if (!p.playerName.trim() || !p.sport || !p.position.trim()) {
-        toast.error(`Please fill in all required fields for ${p.playerName || "a player"}.`);
+        toast.error(`Please fill required fields for ${p.playerName || "a player"}.`);
         return false;
       }
-      if (p.skillRating === 0 || p.fitnessRating === 0 || p.teamworkRating === 0) {
-        toast.error(`Please rate all skills for ${p.playerName || "a player"}.`);
+      const ratedCount = RATING_CATEGORIES.filter((c) => (p.ratings[c.key] || 0) > 0).length;
+      if (ratedCount < 6) {
+        toast.error(`Please rate at least 6 categories for ${p.playerName}.`);
         return false;
       }
       if (!p.strengthNote.trim() || !p.improvementNote.trim()) {
@@ -131,27 +147,39 @@ const Index = () => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-3xl mx-auto px-4 pb-20"
+            className="max-w-4xl mx-auto px-4 pb-20"
           >
             {/* Academy Info */}
             <div className="rounded-xl border bg-card p-5 md:p-6 shadow-sm space-y-4 mb-6">
-              <h2 className="font-display text-xl font-bold text-foreground">Academy Details</h2>
+              <h2 className="font-display text-xl font-bold text-foreground">Academy & Report Details</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Academy Name</label>
-                  <Input
-                    placeholder="e.g. Champions Cricket Academy"
-                    value={academy.academyName}
-                    onChange={(e) => setAcademy((a) => ({ ...a, academyName: e.target.value }))}
-                  />
+                  <label className="text-sm font-medium">Academy Name *</label>
+                  <Input placeholder="e.g. Champions Cricket Academy" value={academy.academyName} onChange={(e) => setAcademy((a) => ({ ...a, academyName: e.target.value }))} />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Coach Name</label>
-                  <Input
-                    placeholder="e.g. Coach Rajesh"
-                    value={academy.coachName}
-                    onChange={(e) => setAcademy((a) => ({ ...a, coachName: e.target.value }))}
-                  />
+                  <label className="text-sm font-medium">Coach Name *</label>
+                  <Input placeholder="e.g. Coach Rajesh" value={academy.coachName} onChange={(e) => setAcademy((a) => ({ ...a, coachName: e.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Report Type</label>
+                  <Select value={academy.reportType} onValueChange={(v) => handleReportTypeChange(v as ReportType)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">
+                        <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Monthly Report</span>
+                      </SelectItem>
+                      <SelectItem value="annual">
+                        <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Annual Report</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Period</label>
+                  <Input placeholder={academy.reportType === "monthly" ? "e.g. April 2026" : "e.g. 2025–2026"} value={academy.periodLabel} onChange={(e) => setAcademy((a) => ({ ...a, periodLabel: e.target.value }))} />
                 </div>
               </div>
             </div>
@@ -159,14 +187,7 @@ const Index = () => {
             {/* Player Forms */}
             <div className="space-y-5">
               {players.map((player, index) => (
-                <PlayerForm
-                  key={player.id}
-                  player={player}
-                  index={index}
-                  onChange={handlePlayerChange}
-                  onRemove={removePlayer}
-                  canRemove={players.length > 1}
-                />
+                <PlayerForm key={player.id} player={player} index={index} onChange={handlePlayerChange} onRemove={removePlayer} canRemove={players.length > 1} />
               ))}
             </div>
 
@@ -174,18 +195,11 @@ const Index = () => {
               <Button variant="outline" onClick={addPlayer} className="flex-1">
                 <Plus className="h-4 w-4 mr-1.5" /> Add Another Player
               </Button>
-              <Button
-                onClick={handleGenerate}
-                disabled={isGenerating}
-                className="flex-1 shadow-lg shadow-primary/20"
-              >
+              <Button onClick={handleGenerate} disabled={isGenerating} className="flex-1 shadow-lg shadow-primary/20">
                 {isGenerating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                    Generating {progress.current}/{progress.total}...
-                  </>
+                  <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Generating {progress.current}/{progress.total}...</>
                 ) : (
-                  "Generate Reports"
+                  `Generate ${academy.reportType === "annual" ? "Annual" : "Monthly"} Reports`
                 )}
               </Button>
             </div>
@@ -193,14 +207,8 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* Reports Section */}
       {reports.length > 0 && (
-        <motion.div
-          ref={reportsRef}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="max-w-3xl mx-auto px-4 pb-20"
-        >
+        <motion.div ref={reportsRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto px-4 pb-20">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-display text-2xl font-bold text-foreground">
               Generated Reports ({reports.length})

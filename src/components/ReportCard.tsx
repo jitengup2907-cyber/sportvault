@@ -1,4 +1,4 @@
-import { GeneratedReport, AcademyInfo } from "@/types/player";
+import { GeneratedReport, AcademyInfo, RATING_CATEGORIES } from "@/types/player";
 import { Button } from "@/components/ui/button";
 import { Copy, Download, Star } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +8,12 @@ interface ReportCardProps {
   report: GeneratedReport;
   academy: AcademyInfo;
 }
+
+const DIMENSION_COLORS: Record<string, string> = {
+  physical: "text-primary",
+  mental: "text-accent-foreground",
+  social: "text-secondary-foreground",
+};
 
 const ReportCard = ({ report, academy }: ReportCardProps) => {
   const { player, reportText } = report;
@@ -24,50 +30,81 @@ const ReportCard = ({ report, academy }: ReportCardProps) => {
   const renderStars = (rating: number) => (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((s) => (
-        <Star
-          key={s}
-          className={`h-4 w-4 ${s <= rating ? "fill-primary text-primary" : "fill-muted text-border"}`}
-        />
+        <Star key={s} className={`h-3.5 w-3.5 ${s <= rating ? "fill-primary text-primary" : "fill-muted text-border"}`} />
       ))}
     </div>
   );
 
+  // Compute averages per group
+  const computeAvg = (group: string) => {
+    const cats = RATING_CATEGORIES.filter((c) => c.group === group);
+    const rated = cats.filter((c) => player.ratings[c.key] > 0);
+    if (rated.length === 0) return 0;
+    return rated.reduce((sum, c) => sum + player.ratings[c.key], 0) / rated.length;
+  };
+
+  const onPitchAvg = computeAvg("on-pitch");
+  const offPitchAvg = computeAvg("off-pitch");
+  const overallAvg = (onPitchAvg + offPitchAvg) / 2;
+
   return (
-    <div className="rounded-xl border bg-card p-5 md:p-6 shadow-sm space-y-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="font-display text-xl font-bold text-foreground">{player.playerName}</h3>
-          <p className="text-sm text-muted-foreground">
-            {player.sport} · {player.position} · Age {player.age}
-          </p>
+    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="bg-primary/5 px-5 py-4 border-b">
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="font-display text-xl font-bold text-foreground">{player.playerName}</h3>
+            <p className="text-sm text-muted-foreground">{player.sport} · {player.position} · Age {player.age}</p>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-display font-extrabold text-primary">{overallAvg.toFixed(1)}</div>
+            <div className="text-xs text-muted-foreground">Overall</div>
+          </div>
         </div>
-        <span className="text-sm font-medium bg-secondary text-secondary-foreground px-3 py-1 rounded-full">
-          {player.sessionsAttended}/{player.totalSessions} sessions
-        </span>
-      </div>
-
-      <div className="flex flex-wrap gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">Skill:</span>
-          {renderStars(player.skillRating)}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">Fitness:</span>
-          {renderStars(player.fitnessRating)}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">Teamwork:</span>
-          {renderStars(player.teamworkRating)}
+        <div className="flex flex-wrap gap-3 mt-3 text-xs">
+          <span className="bg-card px-2.5 py-1 rounded-full border font-medium">
+            📅 {player.sessionsAttended}/{player.totalSessions} sessions
+          </span>
+          <span className="bg-card px-2.5 py-1 rounded-full border font-medium">
+            ⚡ On-Pitch: {onPitchAvg.toFixed(1)}/5
+          </span>
+          <span className="bg-card px-2.5 py-1 rounded-full border font-medium">
+            🏠 Off-Pitch: {offPitchAvg.toFixed(1)}/5
+          </span>
         </div>
       </div>
 
-      <div className="bg-secondary/50 rounded-lg p-4 text-sm leading-relaxed text-foreground whitespace-pre-line">
-        {reportText}
+      {/* Ratings breakdown */}
+      <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4 border-b">
+        {(["on-pitch", "off-pitch"] as const).map((group) => (
+          <div key={group}>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+              {group === "on-pitch" ? "⚡ On the Pitch" : "🏠 Off the Pitch"}
+            </h4>
+            <div className="space-y-1.5">
+              {RATING_CATEGORIES.filter((c) => c.group === group).map((cat) => (
+                <div key={cat.key} className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-foreground truncate">{cat.label}</span>
+                  {renderStars(player.ratings[cat.key] || 0)}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="flex gap-2">
+      {/* AI Report */}
+      <div className="px-5 py-4 border-b">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">📝 Coach's Report</h4>
+        <div className="bg-secondary/40 rounded-lg p-4 text-sm leading-relaxed text-foreground whitespace-pre-line">
+          {reportText}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="px-5 py-3 flex gap-2">
         <Button variant="outline" size="sm" onClick={handleCopy}>
-          <Copy className="h-4 w-4 mr-1.5" /> Copy Text
+          <Copy className="h-4 w-4 mr-1.5" /> Copy
         </Button>
         <Button size="sm" onClick={handleDownload}>
           <Download className="h-4 w-4 mr-1.5" /> Download PDF
