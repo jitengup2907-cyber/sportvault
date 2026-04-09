@@ -65,10 +65,22 @@ export interface AcademyInfo {
   academyName: string;
   coachName: string;
   reportType: ReportType;
-  periodLabel: string; // e.g. "April 2026" or "2025-2026"
+  periodLabel: string;
+  logoDataUrl?: string; // base64 data URL of uploaded logo
 }
 
 export interface GeneratedReport {
   player: PlayerData;
   reportText: string;
+  generatedAt: string; // ISO date
+}
+
+export interface SavedReport {
+  periodLabel: string;
+  reportType: ReportType;
+  academyName: string;
+  playerName: string;
+  ratings: Record<string, number>;
+  reportText: string;
+  generatedAt: string;
 }
