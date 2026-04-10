@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import StarRating from "./StarRating";
 import { Trash2, ChevronDown, ChevronUp } from "lucide-react";
-import { SPORTS } from "@/types/player";
+import { SPORT_NAMES, getSportPositions } from "@/types/sports";
 import { useState } from "react";
 
 interface PlayerFormProps {
