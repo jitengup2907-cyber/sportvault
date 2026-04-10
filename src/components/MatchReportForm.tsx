@@ -27,7 +27,7 @@ const MatchReportForm = ({ match, onChange }: MatchReportFormProps) => (
         <Select value={match.sport} onValueChange={(v) => onChange({ sport: v })}>
           <SelectTrigger><SelectValue placeholder="Select sport" /></SelectTrigger>
           <SelectContent>
-            {SPORTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            {SPORT_NAMES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>

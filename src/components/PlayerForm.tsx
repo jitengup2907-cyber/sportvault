@@ -93,7 +93,7 @@ const PlayerForm = ({ player, index, onChange, onRemove, canRemove }: PlayerForm
               <Select value={player.sport} onValueChange={(v) => updateField("sport", v)}>
                 <SelectTrigger><SelectValue placeholder="Select sport" /></SelectTrigger>
                 <SelectContent>
-                  {SPORTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {SPORT_NAMES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
