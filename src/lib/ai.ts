@@ -94,10 +94,15 @@ function buildPlayerMessage(player: PlayerData, academy: AcademyInfo): string {
     ? ((player.sessionsAttended / player.totalSessions) * 100).toFixed(0)
     : "N/A";
 
+  const sportContext = getSportAIContext(player.sport);
+  const sportConfig = getSportConfig(player.sport);
+  const sportTerms = sportConfig ? `\nSport-specific context: ${sportContext}\nUse "${sportConfig.matchTerm}" for games, "${sportConfig.venueTerm}" for venue, "${sportConfig.periodTerm}" for periods, "${sportConfig.scoringUnit}" for scoring.` : "";
+
   return `Generate a ${academy.reportType} player report card using this data:
 Player: ${player.playerName}, Age: ${player.age}, Sport: ${player.sport}, Position: ${player.position}
 Attendance: ${player.sessionsAttended}/${player.totalSessions} sessions (${attendancePct}%)
 Period: ${academy.periodLabel}
+${sportTerms}
 
 RATINGS (all out of 5):${buildRatingsText(player)}
 
