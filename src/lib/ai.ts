@@ -1,6 +1,7 @@
 import { PlayerData, AcademyInfo, RATING_CATEGORIES } from "@/types/player";
 import { MatchData } from "@/types/match";
 import { ReportTone } from "@/types/template";
+import { getSportAIContext, getSportConfig } from "@/types/sports";
 
 const TONE_INSTRUCTIONS: Record<ReportTone, string> = {
   encouraging: "Your tone is warm, encouraging, positive, and celebratory. Frame everything as growth. Use uplifting language. Celebrate effort and small wins.",

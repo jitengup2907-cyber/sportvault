@@ -99,7 +99,14 @@ const PlayerForm = ({ player, index, onChange, onRemove, canRemove }: PlayerForm
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Position / Role *</label>
-              <Input placeholder="e.g. Batsman, Striker" value={player.position} onChange={(e) => updateField("position", e.target.value)} />
+              {player.sport && getSportPositions(player.sport).length > 0 ? (
+                <Select value={player.position} onValueChange={(v) => updateField("position", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
+                  <SelectContent>{getSportPositions(player.sport).map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                </Select>
+              ) : (
+                <Input placeholder="e.g. Forward, Defender" value={player.position} onChange={(e) => updateField("position", e.target.value)} />
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Sessions Attended</label>
