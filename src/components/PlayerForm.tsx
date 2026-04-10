@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import StarRating from "./StarRating";
 import { Trash2, ChevronDown, ChevronUp } from "lucide-react";
-import { SPORTS } from "@/types/player";
+import { SPORT_NAMES, getSportPositions } from "@/types/sports";
 import { useState } from "react";
 
 interface PlayerFormProps {
@@ -93,13 +93,20 @@ const PlayerForm = ({ player, index, onChange, onRemove, canRemove }: PlayerForm
               <Select value={player.sport} onValueChange={(v) => updateField("sport", v)}>
                 <SelectTrigger><SelectValue placeholder="Select sport" /></SelectTrigger>
                 <SelectContent>
-                  {SPORTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {SPORT_NAMES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Position / Role *</label>
-              <Input placeholder="e.g. Batsman, Striker" value={player.position} onChange={(e) => updateField("position", e.target.value)} />
+              {player.sport && getSportPositions(player.sport).length > 0 ? (
+                <Select value={player.position} onValueChange={(v) => updateField("position", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
+                  <SelectContent>{getSportPositions(player.sport).map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                </Select>
+              ) : (
+                <Input placeholder="e.g. Forward, Defender" value={player.position} onChange={(e) => updateField("position", e.target.value)} />
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Sessions Attended</label>

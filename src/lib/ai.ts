@@ -1,6 +1,7 @@
 import { PlayerData, AcademyInfo, RATING_CATEGORIES } from "@/types/player";
 import { MatchData } from "@/types/match";
 import { ReportTone } from "@/types/template";
+import { getSportAIContext, getSportConfig } from "@/types/sports";
 
 const TONE_INSTRUCTIONS: Record<ReportTone, string> = {
   encouraging: "Your tone is warm, encouraging, positive, and celebratory. Frame everything as growth. Use uplifting language. Celebrate effort and small wins.",
@@ -93,10 +94,15 @@ function buildPlayerMessage(player: PlayerData, academy: AcademyInfo): string {
     ? ((player.sessionsAttended / player.totalSessions) * 100).toFixed(0)
     : "N/A";
 
+  const sportContext = getSportAIContext(player.sport);
+  const sportConfig = getSportConfig(player.sport);
+  const sportTerms = sportConfig ? `\nSport-specific context: ${sportContext}\nUse "${sportConfig.matchTerm}" for games, "${sportConfig.venueTerm}" for venue, "${sportConfig.periodTerm}" for periods, "${sportConfig.scoringUnit}" for scoring.` : "";
+
   return `Generate a ${academy.reportType} player report card using this data:
 Player: ${player.playerName}, Age: ${player.age}, Sport: ${player.sport}, Position: ${player.position}
 Attendance: ${player.sessionsAttended}/${player.totalSessions} sessions (${attendancePct}%)
 Period: ${academy.periodLabel}
+${sportTerms}
 
 RATINGS (all out of 5):${buildRatingsText(player)}
 
