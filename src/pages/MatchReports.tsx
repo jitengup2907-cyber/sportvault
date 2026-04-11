@@ -77,6 +77,26 @@ const MatchReports = () => {
         </div>
       </div>
 
+      {/* Match Recording Upload */}
+      <div className="rounded-xl border bg-card p-5 md:p-6 shadow-sm mb-6">
+        <h2 className="font-display text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+          <Video className="h-5 w-5 text-primary" /> Match Recording
+        </h2>
+        <p className="text-xs text-muted-foreground mb-3">Upload match footage (up to 100 GB). Supported: MP4, MOV, AVI, MKV</p>
+        <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer hover:border-primary/50 transition-colors">
+          <Upload className="h-5 w-5 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">
+            {uploading ? "Uploading..." : recordingFile ? recordingFile.name : "Click to upload recording"}
+          </span>
+          <input
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleRecordingUpload(f); }}
+          />
+        </label>
+      </div>
+
       <div className="rounded-xl border bg-card p-5 md:p-6 shadow-sm mb-6">
         <h2 className="font-display text-xl font-bold text-foreground mb-4">Template & Style</h2>
         <TemplateSelector selectedTemplate={selectedTemplate} selectedTone={selectedTone} onTemplateChange={setSelectedTemplate} onToneChange={setSelectedTone} />
