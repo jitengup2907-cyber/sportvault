@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Activity, Plus, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,47 +8,48 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { SPORT_NAMES } from "@/types/sports";
-
-interface Injury {
-  id: string;
-  playerName: string;
-  sport: string;
-  injuryType: string;
-  bodyPart: string;
-  severity: string;
-  injuryDate: string;
-  expectedReturn: string;
-  treatmentNotes: string;
-  status: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import BackButton from "@/components/BackButton";
 
 const Injuries = () => {
-  const [injuries, setInjuries] = useState<Injury[]>([]);
+  const { user } = useAuth();
+  const [injuries, setInjuries] = useState<any[]>([]);
+  const [academyId, setAcademyId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<Partial<Injury>>({
-    severity: "moderate",
-    status: "active",
+  const [form, setForm] = useState<any>({
+    severity: "moderate", status: "active",
     injuryDate: new Date().toISOString().split("T")[0],
   });
 
-  const addInjury = () => {
+  useEffect(() => { if (user) loadAcademy(); }, [user]);
+
+  const loadAcademy = async () => {
+    const { data } = await supabase.from("academies").select("id").limit(1).single();
+    if (data) { setAcademyId(data.id); loadInjuries(data.id); }
+  };
+
+  const loadInjuries = async (aId: string) => {
+    const { data } = await supabase.from("injuries").select("*").eq("academy_id", aId).order("created_at", { ascending: false });
+    if (data) setInjuries(data);
+  };
+
+  const addInjury = async () => {
     if (!form.playerName || !form.injuryType) { toast.error("Fill player name and injury type"); return; }
-    const injury: Injury = {
-      id: crypto.randomUUID(),
-      playerName: form.playerName || "",
-      sport: form.sport || "",
-      injuryType: form.injuryType || "",
-      bodyPart: form.bodyPart || "",
-      severity: form.severity || "moderate",
-      injuryDate: form.injuryDate || "",
-      expectedReturn: form.expectedReturn || "",
-      treatmentNotes: form.treatmentNotes || "",
-      status: form.status || "active",
-    };
-    setInjuries((prev) => [injury, ...prev]);
+    if (!academyId || !user) { toast.error("Create an academy first"); return; }
+    const { error } = await supabase.from("injuries").insert({
+      academy_id: academyId, created_by: user.id,
+      player_name: form.playerName, sport: form.sport || null,
+      injury_type: form.injuryType, body_part: form.bodyPart || null,
+      severity: form.severity, injury_date: form.injuryDate,
+      expected_return: form.expectedReturn || null,
+      treatment_notes: form.treatmentNotes || null, status: form.status,
+    });
+    if (error) { toast.error(error.message); return; }
     setForm({ severity: "moderate", status: "active", injuryDate: new Date().toISOString().split("T")[0] });
     setShowForm(false);
     toast.success("Injury logged");
+    loadInjuries(academyId);
   };
 
   const statusIcon = (status: string) => {
@@ -65,6 +66,7 @@ const Injuries = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pb-20">
+      <BackButton />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-3xl font-extrabold text-foreground">Injury Tracker</h1>
@@ -78,18 +80,18 @@ const Injuries = () => {
           <h2 className="font-display text-lg font-bold">New Injury Record</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5"><label className="text-sm font-medium">Player Name *</label>
-              <Input placeholder="Player name" value={form.playerName || ""} onChange={(e) => setForm(f => ({ ...f, playerName: e.target.value }))} /></div>
+              <Input placeholder="Player name" value={form.playerName || ""} onChange={(e) => setForm((f: any) => ({ ...f, playerName: e.target.value }))} /></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Sport</label>
-              <Select value={form.sport || ""} onValueChange={(v) => setForm(f => ({ ...f, sport: v }))}>
+              <Select value={form.sport || ""} onValueChange={(v) => setForm((f: any) => ({ ...f, sport: v }))}>
                 <SelectTrigger><SelectValue placeholder="Select sport..." /></SelectTrigger>
                 <SelectContent>{SPORT_NAMES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Injury Type *</label>
-              <Input placeholder="e.g. ACL Tear, Hamstring Strain" value={form.injuryType || ""} onChange={(e) => setForm(f => ({ ...f, injuryType: e.target.value }))} /></div>
+              <Input placeholder="e.g. ACL Tear" value={form.injuryType || ""} onChange={(e) => setForm((f: any) => ({ ...f, injuryType: e.target.value }))} /></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Body Part</label>
-              <Input placeholder="e.g. Left Knee" value={form.bodyPart || ""} onChange={(e) => setForm(f => ({ ...f, bodyPart: e.target.value }))} /></div>
+              <Input placeholder="e.g. Left Knee" value={form.bodyPart || ""} onChange={(e) => setForm((f: any) => ({ ...f, bodyPart: e.target.value }))} /></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Severity</label>
-              <Select value={form.severity} onValueChange={(v) => setForm(f => ({ ...f, severity: v }))}>
+              <Select value={form.severity} onValueChange={(v) => setForm((f: any) => ({ ...f, severity: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="minor">Minor</SelectItem>
@@ -98,11 +100,11 @@ const Injuries = () => {
                 </SelectContent>
               </Select></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Injury Date</label>
-              <Input type="date" value={form.injuryDate || ""} onChange={(e) => setForm(f => ({ ...f, injuryDate: e.target.value }))} /></div>
+              <Input type="date" value={form.injuryDate || ""} onChange={(e) => setForm((f: any) => ({ ...f, injuryDate: e.target.value }))} /></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Expected Return</label>
-              <Input type="date" value={form.expectedReturn || ""} onChange={(e) => setForm(f => ({ ...f, expectedReturn: e.target.value }))} /></div>
+              <Input type="date" value={form.expectedReturn || ""} onChange={(e) => setForm((f: any) => ({ ...f, expectedReturn: e.target.value }))} /></div>
             <div className="space-y-1.5 md:col-span-2"><label className="text-sm font-medium">Treatment Notes</label>
-              <Textarea placeholder="Treatment plan, medications, physio notes..." value={form.treatmentNotes || ""} onChange={(e) => setForm(f => ({ ...f, treatmentNotes: e.target.value }))} /></div>
+              <Textarea placeholder="Treatment plan..." value={form.treatmentNotes || ""} onChange={(e) => setForm((f: any) => ({ ...f, treatmentNotes: e.target.value }))} /></div>
           </div>
           <Button onClick={addInjury} className="w-full">Save Injury Record</Button>
         </motion.div>
@@ -123,17 +125,17 @@ const Injuries = () => {
               <div className="flex items-center gap-2">
                 {statusIcon(inj.status)}
                 <div>
-                  <h3 className="font-bold">{inj.playerName}</h3>
-                  <p className="text-sm text-muted-foreground">{inj.injuryType} — {inj.bodyPart}</p>
+                  <h3 className="font-bold">{inj.player_name}</h3>
+                  <p className="text-sm text-muted-foreground">{inj.injury_type} — {inj.body_part}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Badge className={severityColor(inj.severity)}>{inj.severity}</Badge>
-                <span className="text-xs text-muted-foreground">{inj.injuryDate}</span>
+                <span className="text-xs text-muted-foreground">{inj.injury_date}</span>
               </div>
             </div>
-            {inj.treatmentNotes && <p className="text-sm text-muted-foreground mt-2">{inj.treatmentNotes}</p>}
-            {inj.expectedReturn && <p className="text-xs text-muted-foreground mt-1">Expected return: {inj.expectedReturn}</p>}
+            {inj.treatment_notes && <p className="text-sm text-muted-foreground mt-2">{inj.treatment_notes}</p>}
+            {inj.expected_return && <p className="text-xs text-muted-foreground mt-1">Expected return: {inj.expected_return}</p>}
           </div>
         ))}
       </div>

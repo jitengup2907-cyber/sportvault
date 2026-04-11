@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trophy, Plus, Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,34 +7,43 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { SPORT_NAMES } from "@/types/sports";
 import { motion } from "framer-motion";
-
-interface Tournament {
-  id: string;
-  name: string;
-  sport: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-  format: string;
-  status: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import BackButton from "@/components/BackButton";
 
 const Tournaments = () => {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const { user } = useAuth();
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [academyId, setAcademyId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<Partial<Tournament>>({ status: "upcoming", format: "knockout" });
+  const [form, setForm] = useState<any>({ status: "upcoming", format: "knockout" });
 
-  const addTournament = () => {
+  useEffect(() => { if (user) loadAcademy(); }, [user]);
+
+  const loadAcademy = async () => {
+    const { data } = await supabase.from("academies").select("id").limit(1).single();
+    if (data) { setAcademyId(data.id); loadTournaments(data.id); }
+  };
+
+  const loadTournaments = async (aId: string) => {
+    const { data } = await supabase.from("tournaments").select("*").eq("academy_id", aId).order("start_date", { ascending: false });
+    if (data) setTournaments(data);
+  };
+
+  const addTournament = async () => {
     if (!form.name || !form.sport || !form.startDate) { toast.error("Fill name, sport, and start date"); return; }
-    setTournaments(prev => [{
-      id: crypto.randomUUID(),
-      name: form.name || "", sport: form.sport || "", location: form.location || "",
-      startDate: form.startDate || "", endDate: form.endDate || "",
-      format: form.format || "knockout", status: form.status || "upcoming",
-    }, ...prev]);
+    if (!academyId || !user) { toast.error("Create an academy first"); return; }
+    const { error } = await supabase.from("tournaments").insert({
+      academy_id: academyId, created_by: user.id,
+      name: form.name, sport: form.sport, location: form.location || null,
+      start_date: form.startDate, end_date: form.endDate || null,
+      format: form.format, status: form.status,
+    });
+    if (error) { toast.error(error.message); return; }
     setForm({ status: "upcoming", format: "knockout" });
     setShowForm(false);
     toast.success("Tournament created");
+    loadTournaments(academyId);
   };
 
   const statusColor = (s: string) => {
@@ -45,6 +54,7 @@ const Tournaments = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pb-20">
+      <BackButton />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-3xl font-extrabold text-foreground">Tournaments</h1>
@@ -58,16 +68,16 @@ const Tournaments = () => {
           <h2 className="font-display text-lg font-bold">New Tournament</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5"><label className="text-sm font-medium">Tournament Name *</label>
-              <Input placeholder="e.g. Spring Cup 2025" value={form.name || ""} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+              <Input placeholder="e.g. Spring Cup 2025" value={form.name || ""} onChange={(e) => setForm((f: any) => ({ ...f, name: e.target.value }))} /></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Sport *</label>
-              <Select value={form.sport || ""} onValueChange={(v) => setForm(f => ({ ...f, sport: v }))}>
+              <Select value={form.sport || ""} onValueChange={(v) => setForm((f: any) => ({ ...f, sport: v }))}>
                 <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
                 <SelectContent>{SPORT_NAMES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
               </Select></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Location</label>
-              <Input placeholder="Venue name" value={form.location || ""} onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))} /></div>
+              <Input placeholder="Venue name" value={form.location || ""} onChange={(e) => setForm((f: any) => ({ ...f, location: e.target.value }))} /></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Format</label>
-              <Select value={form.format} onValueChange={(v) => setForm(f => ({ ...f, format: v }))}>
+              <Select value={form.format} onValueChange={(v) => setForm((f: any) => ({ ...f, format: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="knockout">Knockout</SelectItem>
@@ -77,9 +87,9 @@ const Tournaments = () => {
                 </SelectContent>
               </Select></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Start Date *</label>
-              <Input type="date" value={form.startDate || ""} onChange={(e) => setForm(f => ({ ...f, startDate: e.target.value }))} /></div>
+              <Input type="date" value={form.startDate || ""} onChange={(e) => setForm((f: any) => ({ ...f, startDate: e.target.value }))} /></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">End Date</label>
-              <Input type="date" value={form.endDate || ""} onChange={(e) => setForm(f => ({ ...f, endDate: e.target.value }))} /></div>
+              <Input type="date" value={form.endDate || ""} onChange={(e) => setForm((f: any) => ({ ...f, endDate: e.target.value }))} /></div>
           </div>
           <Button onClick={addTournament} className="w-full">Create Tournament</Button>
         </motion.div>
@@ -100,7 +110,7 @@ const Tournaments = () => {
               <div>
                 <h3 className="font-bold">{t.name}</h3>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {t.startDate}{t.endDate && ` – ${t.endDate}`}</span>
+                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {t.start_date}{t.end_date && ` – ${t.end_date}`}</span>
                   {t.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {t.location}</span>}
                 </div>
               </div>
