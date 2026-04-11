@@ -1,7 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { ClipboardList, ArrowRight, Shield, FileText, Activity, Trophy, Dumbbell, DollarSign } from "lucide-react";
+import { ArrowRight, Shield, Users, Medal, Building2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+
+const SPORT_ICONS = [
+  "⚽", "🏏", "🏀", "🎾", "🏸", "🏓", "🏐", "⚾", "🏉", "🏑",
+  "🏒", "⛳", "🏊", "🏃", "🥊", "🥋", "🤸", "🚴", "🤾", "🤼",
+  "🤺", "🏹", "🚣", "🏄", "🏋️", "⛵", "🛹", "🎯", "🏇", "🥍",
+];
+const SPORT_LABELS = [
+  "Football", "Cricket", "Basketball", "Tennis", "Badminton", "Table Tennis", "Volleyball", "Baseball", "Rugby", "Hockey",
+  "Ice Hockey", "Golf", "Swimming", "Athletics", "Boxing", "MMA", "Gymnastics", "Cycling", "Handball", "Wrestling",
+  "Fencing", "Archery", "Rowing", "Surfing", "Weightlifting", "Sailing", "Skateboarding", "Squash", "Equestrian", "Lacrosse",
+];
+
+const PERSONAS = [
+  { icon: Users, title: "For Coaches", desc: "Generate AI reports, plan training, track attendance — in minutes not hours." },
+  { icon: Medal, title: "For Athletes", desc: "Shareable progress cards, injury logs, and performance tracking across seasons." },
+  { icon: Building2, title: "For Organisations", desc: "Multi-academy management, contracts, finances, and tournament ops — one platform." },
+];
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -16,7 +33,7 @@ const HeroSection = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
-        className="relative z-10 max-w-4xl"
+        className="relative z-10 max-w-5xl"
       >
         <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-1.5 rounded-full mb-6">
           <Shield className="h-4 w-4" />
@@ -50,29 +67,62 @@ const HeroSection = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-12 max-w-3xl mx-auto">
-          {[
-            { label: "Player Reports", desc: "AI-powered progress analysis", icon: ClipboardList },
-            { label: "Match Analysis", desc: "Tactical summaries & insights", icon: ClipboardList },
-            { label: "Contracts", desc: "Player, coach & sponsor deals", icon: FileText },
-            { label: "Injury Tracker", desc: "Medical records & recovery", icon: Activity },
-            { label: "Training Plans", desc: "Sessions, drills & attendance", icon: Dumbbell },
-            { label: "Tournaments", desc: "Fixtures, standings, results", icon: Trophy },
-            { label: "Finances", desc: "Fees, budgets & payments", icon: DollarSign },
-            { label: "Parent Portal", desc: "Shareable report links", icon: Shield },
-          ].map((f) => (
-            <div key={f.label} className="bg-card rounded-lg border p-3 text-left">
-              <f.icon className="h-4 w-4 text-primary mb-1" />
-              <p className="text-sm font-bold text-foreground">{f.label}</p>
-              <p className="text-xs text-muted-foreground">{f.desc}</p>
+        {/* Persona Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12 max-w-3xl mx-auto">
+          {PERSONAS.map((p) => (
+            <div key={p.title} className="bg-card rounded-xl border p-5 text-left">
+              <p.icon className="h-6 w-6 text-primary mb-2" />
+              <h3 className="font-bold text-foreground text-sm">{p.title}</h3>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{p.desc}</p>
             </div>
           ))}
         </div>
 
-        <p className="mt-8 text-xs text-muted-foreground">
-          ⚽ Football · 🏏 Cricket · 🏀 Basketball · 🎾 Tennis · 🏸 Badminton · 🏓 Table Tennis · 🏐 Volleyball · ⚾ Baseball · 🏉 Rugby · 🏑 Hockey · 🏒 Ice Hockey · ⛳ Golf · 🏊 Swimming · 🏃 Athletics · 🥊 Boxing · 🥋 MMA & Martial Arts · 🤸 Gymnastics · 🚴 Cycling · 🤾 Handball · 🤼 Wrestling · 🤺 Fencing · 🎯 Squash · 🚣 Rowing · 🏄 Surfing · 🏋️ Weightlifting · 🏹 Archery · ⛵ Sailing · 🛹 Skateboarding + More
-        </p>
+        {/* Sport Grid Scrolling Strip */}
+        <div className="mt-10 overflow-hidden relative max-w-4xl mx-auto">
+          <div className="flex gap-3 animate-scroll">
+            {[...SPORT_ICONS, ...SPORT_ICONS].map((icon, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 flex flex-col items-center justify-center bg-card border rounded-lg w-20 h-20 hover:border-primary/50 transition-colors"
+              >
+                <span className="text-2xl">{icon}</span>
+                <span className="text-[10px] text-muted-foreground mt-1 font-medium">
+                  {SPORT_LABELS[i % SPORT_LABELS.length]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Authority Proof */}
+        <div className="mt-10 rounded-xl border bg-card/50 p-6 max-w-2xl mx-auto">
+          <p className="text-sm font-semibold text-foreground mb-2">Trusted Documentation Standards</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Documentation standards sourced from official governing bodies. Covering <span className="text-primary font-semibold">FIFA, ICC, BWF, FIBA, ITF, World Athletics, FIVB</span> and 23+ more international federations. Sport-specific terminology, scoring systems, and tactical frameworks built in.
+          </p>
+        </div>
+
+        {/* Free Access Note */}
+        <div className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">✓ Free to explore</span>
+          <span className="flex items-center gap-1">✓ No credit card needed</span>
+          <span className="flex items-center gap-1">✓ Export anytime</span>
+        </div>
       </motion.div>
+
+      <style>{`
+        @keyframes scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-scroll {
+          animation: scroll 30s linear infinite;
+        }
+        .animate-scroll:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </section>
   );
 };
