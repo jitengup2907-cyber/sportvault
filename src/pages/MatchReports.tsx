@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -12,6 +12,8 @@ import { ReportTone, REPORT_TEMPLATES } from "@/types/template";
 import { generateMatchReport } from "@/lib/ai";
 import { generateMatchPDF } from "@/lib/pdf";
 import { generateMatchDocx } from "@/lib/docx";
+import { supabase } from "@/integrations/supabase/client";
+import BackButton from "@/components/BackButton";
 
 const MatchReports = () => {
   const [match, setMatch] = useState<MatchData>(createEmptyMatch());
@@ -20,6 +22,8 @@ const MatchReports = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("classic-green");
   const [selectedTone, setSelectedTone] = useState<ReportTone>("direct");
+  const [recordingFile, setRecordingFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
   const template = REPORT_TEMPLATES.find((t) => t.id === selectedTemplate) || REPORT_TEMPLATES[0];
@@ -51,8 +55,18 @@ const MatchReports = () => {
     setIsGenerating(false);
   };
 
+  const handleRecordingUpload = async (file: File) => {
+    setUploading(true);
+    const path = `recordings/${Date.now()}_${file.name}`;
+    const { error } = await supabase.storage.from("match-recordings").upload(path, file);
+    if (error) { toast.error("Upload failed: " + error.message); }
+    else { toast.success("Recording uploaded!"); setRecordingFile(file); }
+    setUploading(false);
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pb-20">
+      <BackButton />
       <h1 className="font-display text-3xl font-extrabold text-foreground mb-2">Match Summary Reports</h1>
       <p className="text-muted-foreground mb-8">Generate AI-powered tactical match analysis for your coaching staff.</p>
 
@@ -61,6 +75,26 @@ const MatchReports = () => {
           <label className="text-sm font-medium">Coach Name *</label>
           <Input placeholder="e.g. Coach Rajesh" value={coachName} onChange={(e) => setCoachName(e.target.value)} />
         </div>
+      </div>
+
+      {/* Match Recording Upload */}
+      <div className="rounded-xl border bg-card p-5 md:p-6 shadow-sm mb-6">
+        <h2 className="font-display text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+          <Video className="h-5 w-5 text-primary" /> Match Recording
+        </h2>
+        <p className="text-xs text-muted-foreground mb-3">Upload match footage (up to 100 GB). Supported: MP4, MOV, AVI, MKV</p>
+        <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer hover:border-primary/50 transition-colors">
+          <Upload className="h-5 w-5 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">
+            {uploading ? "Uploading..." : recordingFile ? recordingFile.name : "Click to upload recording"}
+          </span>
+          <input
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleRecordingUpload(f); }}
+          />
+        </label>
       </div>
 
       <div className="rounded-xl border bg-card p-5 md:p-6 shadow-sm mb-6">

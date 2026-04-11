@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   ClipboardList, Swords, FileText, Activity, Dumbbell,
-  Trophy, DollarSign, LayoutDashboard, LogOut, Menu, X
+  Trophy, DollarSign, LayoutDashboard, LogOut, Menu, X, Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,8 @@ import { useState } from "react";
 
 const links = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/player-reports", label: "Players", icon: ClipboardList },
+  { to: "/players", label: "Roster", icon: Users },
+  { to: "/player-reports", label: "Reports", icon: ClipboardList },
   { to: "/match-reports", label: "Matches", icon: Swords },
   { to: "/contracts", label: "Contracts", icon: FileText },
   { to: "/injuries", label: "Injuries", icon: Activity },

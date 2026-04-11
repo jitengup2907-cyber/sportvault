@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DollarSign, Plus, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,15 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-
-interface FinanceEntry {
-  id: string;
-  type: "income" | "expense";
-  category: string;
-  amount: number;
-  description: string;
-  date: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import BackButton from "@/components/BackButton";
 
 const CATEGORIES = {
   income: ["Player Fee", "Sponsorship", "Tournament Prize", "Membership", "Other Income"],
@@ -22,33 +16,48 @@ const CATEGORIES = {
 };
 
 const Finances = () => {
-  const [entries, setEntries] = useState<FinanceEntry[]>([]);
+  const { user } = useAuth();
+  const [entries, setEntries] = useState<any[]>([]);
+  const [academyId, setAcademyId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<Partial<FinanceEntry>>({
-    type: "income",
-    date: new Date().toISOString().split("T")[0],
+  const [form, setForm] = useState<any>({
+    type: "income", date: new Date().toISOString().split("T")[0],
   });
 
-  const addEntry = () => {
+  useEffect(() => { if (user) loadAcademy(); }, [user]);
+
+  const loadAcademy = async () => {
+    const { data } = await supabase.from("academies").select("id").limit(1).single();
+    if (data) { setAcademyId(data.id); loadEntries(data.id); }
+  };
+
+  const loadEntries = async (aId: string) => {
+    const { data } = await supabase.from("finances").select("*").eq("academy_id", aId).order("transaction_date", { ascending: false });
+    if (data) setEntries(data);
+  };
+
+  const addEntry = async () => {
     if (!form.amount || !form.category) { toast.error("Fill amount and category"); return; }
-    setEntries(prev => [{
-      id: crypto.randomUUID(),
-      type: form.type as "income" | "expense",
-      category: form.category || "",
-      amount: form.amount || 0,
-      description: form.description || "",
-      date: form.date || "",
-    }, ...prev]);
+    if (!academyId || !user) { toast.error("Create an academy first"); return; }
+    const { error } = await supabase.from("finances").insert({
+      academy_id: academyId, created_by: user.id,
+      type: form.type, category: form.category,
+      amount: parseFloat(form.amount), description: form.description || null,
+      transaction_date: form.date,
+    });
+    if (error) { toast.error(error.message); return; }
     setForm({ type: "income", date: new Date().toISOString().split("T")[0] });
     setShowForm(false);
     toast.success("Entry added");
+    loadEntries(academyId);
   };
 
-  const totalIncome = entries.filter(e => e.type === "income").reduce((s, e) => s + e.amount, 0);
-  const totalExpense = entries.filter(e => e.type === "expense").reduce((s, e) => s + e.amount, 0);
+  const totalIncome = entries.filter(e => e.type === "income").reduce((s, e) => s + Number(e.amount), 0);
+  const totalExpense = entries.filter(e => e.type === "expense").reduce((s, e) => s + Number(e.amount), 0);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pb-20">
+      <BackButton />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-3xl font-extrabold text-foreground">Finances</h1>
@@ -57,7 +66,6 @@ const Finances = () => {
         <Button onClick={() => setShowForm(!showForm)}><Plus className="h-4 w-4 mr-1.5" /> Add Entry</Button>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <p className="text-sm text-muted-foreground">Income</p>
@@ -80,7 +88,7 @@ const Finances = () => {
           <h2 className="font-display text-lg font-bold">New Entry</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5"><label className="text-sm font-medium">Type</label>
-              <Select value={form.type} onValueChange={(v) => setForm(f => ({ ...f, type: v as any, category: "" }))}>
+              <Select value={form.type} onValueChange={(v) => setForm((f: any) => ({ ...f, type: v, category: "" }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="income">Income</SelectItem>
@@ -88,18 +96,18 @@ const Finances = () => {
                 </SelectContent>
               </Select></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Category *</label>
-              <Select value={form.category || ""} onValueChange={(v) => setForm(f => ({ ...f, category: v }))}>
+              <Select value={form.category || ""} onValueChange={(v) => setForm((f: any) => ({ ...f, category: v }))}>
                 <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
                 <SelectContent>
                   {CATEGORIES[form.type as keyof typeof CATEGORIES]?.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Amount *</label>
-              <Input type="number" placeholder="0.00" value={form.amount || ""} onChange={(e) => setForm(f => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} /></div>
+              <Input type="number" placeholder="0.00" value={form.amount || ""} onChange={(e) => setForm((f: any) => ({ ...f, amount: e.target.value }))} /></div>
             <div className="space-y-1.5"><label className="text-sm font-medium">Date</label>
-              <Input type="date" value={form.date || ""} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} /></div>
+              <Input type="date" value={form.date || ""} onChange={(e) => setForm((f: any) => ({ ...f, date: e.target.value }))} /></div>
             <div className="space-y-1.5 md:col-span-2"><label className="text-sm font-medium">Description</label>
-              <Input placeholder="Details..." value={form.description || ""} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+              <Input placeholder="Details..." value={form.description || ""} onChange={(e) => setForm((f: any) => ({ ...f, description: e.target.value }))} /></div>
           </div>
           <Button onClick={addEntry} className="w-full">Add Entry</Button>
         </motion.div>
@@ -125,9 +133,9 @@ const Finances = () => {
             </div>
             <div className="text-right">
               <p className={`font-bold ${e.type === "income" ? "text-emerald-600" : "text-red-500"}`}>
-                {e.type === "income" ? "+" : "-"}${e.amount.toLocaleString()}
+                {e.type === "income" ? "+" : "-"}${Number(e.amount).toLocaleString()}
               </p>
-              <p className="text-xs text-muted-foreground">{e.date}</p>
+              <p className="text-xs text-muted-foreground">{e.transaction_date}</p>
             </div>
           </div>
         ))}

@@ -293,6 +293,7 @@ export type Database = {
           match_date: string
           opponent_name: string
           possession: string | null
+          recording_url: string | null
           report_text: string
           result: string
           score_opponent: string | null
@@ -314,6 +315,7 @@ export type Database = {
           match_date?: string
           opponent_name: string
           possession?: string | null
+          recording_url?: string | null
           report_text: string
           result?: string
           score_opponent?: string | null
@@ -335,6 +337,7 @@ export type Database = {
           match_date?: string
           opponent_name?: string
           possession?: string | null
+          recording_url?: string | null
           report_text?: string
           result?: string
           score_opponent?: string | null

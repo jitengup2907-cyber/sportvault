@@ -15,6 +15,7 @@ import Injuries from "./pages/Injuries";
 import Training from "./pages/Training";
 import Tournaments from "./pages/Tournaments";
 import Finances from "./pages/Finances";
+import Players from "./pages/Players";
 import SharedReport from "./pages/SharedReport";
 import NotFound from "./pages/NotFound";
 
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
         <Route path="/tournaments" element={<ProtectedRoute><Tournaments /></ProtectedRoute>} />
         <Route path="/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
+        <Route path="/players" element={<ProtectedRoute><Players /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

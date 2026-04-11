@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import PlayerForm from "@/components/PlayerForm";
+import BackButton from "@/components/BackButton";
 import ReportCard from "@/components/ReportCard";
 import LogoUpload from "@/components/LogoUpload";
 import ComparisonView from "@/components/ComparisonView";
@@ -95,6 +96,7 @@ const PlayerReports = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pb-20">
+      <BackButton />
       <h1 className="font-display text-3xl font-extrabold text-foreground mb-2">Player Report Cards</h1>
       <p className="text-muted-foreground mb-8">Generate professional AI-powered progress reports for individual players.</p>
 
