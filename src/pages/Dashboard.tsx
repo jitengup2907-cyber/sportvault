@@ -72,6 +72,7 @@ const Dashboard = () => {
     { label: "Training", desc: "Session planning & drills", icon: Dumbbell, path: "/training", color: "text-amber-600" },
     { label: "Tournaments", desc: "Fixtures, standings, results", icon: Trophy, path: "/tournaments", color: "text-yellow-600" },
     { label: "Finances", desc: "Fees, payments, budgets", icon: DollarSign, path: "/finances", color: "text-green-600" },
+    { label: "Settings", desc: "Academy profile, logo & billing", icon: Building2, path: "/settings", color: "text-gray-600" },
   ];
 
   return (
