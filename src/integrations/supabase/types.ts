@@ -416,6 +416,10 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          plan: string
+          razorpay_payment_id: string | null
+          subscription_start: string | null
+          subscription_status: string
           updated_at: string
           user_id: string
         }
@@ -425,6 +429,10 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          plan?: string
+          razorpay_payment_id?: string | null
+          subscription_start?: string | null
+          subscription_status?: string
           updated_at?: string
           user_id: string
         }
@@ -434,6 +442,10 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          plan?: string
+          razorpay_payment_id?: string | null
+          subscription_start?: string | null
+          subscription_status?: string
           updated_at?: string
           user_id?: string
         }
@@ -648,6 +660,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_usage: {
+        Row: {
+          ai_messages_count: number
+          contracts_count: number
+          id: string
+          match_reports_count: number
+          month: string
+          player_reports_count: number
+          user_id: string
+        }
+        Insert: {
+          ai_messages_count?: number
+          contracts_count?: number
+          id?: string
+          match_reports_count?: number
+          month: string
+          player_reports_count?: number
+          user_id: string
+        }
+        Update: {
+          ai_messages_count?: number
+          contracts_count?: number
+          id?: string
+          match_reports_count?: number
+          month?: string
+          player_reports_count?: number
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
