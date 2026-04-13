@@ -101,16 +101,19 @@ export function usePlan() {
 
     if (existing) {
       const currentVal = (existing as any)[field] || 0;
+      const updatePayload: Record<string, number> = {};
+      updatePayload[field] = currentVal + 1;
       await supabase
         .from("user_usage")
-        .update({ [field]: currentVal + 1 })
-        .eq("id", existing.id);
+        .update(updatePayload as any)
+        .eq("id", (existing as any).id);
     } else {
-      await supabase.from("user_usage").insert({
+      const insertPayload: any = {
         user_id: user.id,
         month,
-        [field]: 1,
-      });
+      };
+      insertPayload[field] = 1;
+      await supabase.from("user_usage").insert(insertPayload);
     }
 
     setUsage((prev) => ({ ...prev, [field]: prev[field] + 1 }));
