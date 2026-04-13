@@ -35,7 +35,20 @@ const HeroSection = () => {
         transition={{ duration: 0.7 }}
         className="relative z-10 max-w-5xl"
       >
-        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+        {/* Public Nav */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-lg border-b">
+          <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-14">
+            <span className="font-display font-extrabold text-lg text-primary">SportDoc</span>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-primary">Home</span>
+              <button onClick={() => navigate("/pricing")} className="text-sm text-muted-foreground hover:text-foreground">Pricing</button>
+              <Button size="sm" variant="outline" onClick={() => navigate("/auth")}>Sign In</Button>
+              <Button size="sm" onClick={() => navigate("/auth")}>Get Started Free</Button>
+            </div>
+          </div>
+        </nav>
+
+        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-medium px-4 py-1.5 rounded-full mb-6 mt-16">
           <Shield className="h-4 w-4" />
           The World's Complete Sports Documentation Platform
         </div>
@@ -49,21 +62,11 @@ const HeroSection = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <Button
-            size="lg"
-            className="text-base px-8 py-6 font-semibold shadow-lg shadow-primary/20"
-            onClick={() => navigate("/auth")}
-          >
-            Get Started Free
-            <ArrowRight className="ml-2 h-5 w-5" />
+          <Button size="lg" className="text-base px-8 py-6 font-semibold shadow-lg shadow-primary/20" onClick={() => navigate("/auth")}>
+            Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="text-base px-8 py-6 font-semibold"
-            onClick={() => navigate("/auth")}
-          >
-            Sign In
+          <Button size="lg" variant="outline" className="text-base px-8 py-6 font-semibold" onClick={() => navigate("/pricing")}>
+            View Pricing
           </Button>
         </div>
 

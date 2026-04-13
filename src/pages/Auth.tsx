@@ -65,7 +65,7 @@ const Auth = () => {
       >
         <div className="text-center mb-8">
           <h1 className="font-display text-3xl font-extrabold text-foreground">
-            Coach<span className="text-primary">Report</span>
+            Sport<span className="text-primary">Doc</span>
           </h1>
           <p className="text-muted-foreground mt-2">
             The world's complete sports documentation platform
