@@ -1,8 +1,9 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePlan } from "@/hooks/usePlan";
 import {
   ClipboardList, Swords, FileText, Activity, Dumbbell,
-  Trophy, DollarSign, LayoutDashboard, LogOut, Menu, X, Users
+  Trophy, DollarSign, LayoutDashboard, LogOut, Menu, X, Users, Settings, Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,12 @@ const links = [
   { to: "/training", label: "Training", icon: Dumbbell },
   { to: "/tournaments", label: "Tournaments", icon: Trophy },
   { to: "/finances", label: "Finances", icon: DollarSign },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 const Navbar = () => {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
+  const { plan } = usePlan();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -30,12 +33,20 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const planBadgeColor = plan === "pro" ? "bg-blue-500" : plan === "club" ? "bg-primary" : "bg-amber-500";
+  const planLabel = plan.toUpperCase();
+
   return (
     <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b">
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-14">
-        <NavLink to="/dashboard" className="font-display font-extrabold text-lg text-primary tracking-tight">
-          CoachReport
-        </NavLink>
+        <div className="flex items-center gap-2">
+          <NavLink to="/dashboard" className="font-display font-extrabold text-lg text-primary tracking-tight">
+            SportDoc
+          </NavLink>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold text-white ${planBadgeColor}`}>
+            {planLabel}
+          </span>
+        </div>
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-0.5">
@@ -54,6 +65,11 @@ const Navbar = () => {
               {label}
             </NavLink>
           ))}
+          {plan === "free" && (
+            <Button size="sm" variant="outline" onClick={() => navigate("/pricing")} className="ml-1 text-xs text-amber-600 border-amber-300">
+              <Zap className="h-3 w-3 mr-1" /> Upgrade
+            </Button>
+          )}
           <Button variant="ghost" size="sm" onClick={handleSignOut} className="ml-2 text-xs text-muted-foreground">
             <LogOut className="h-3.5 w-3.5 mr-1" /> Sign Out
           </Button>
@@ -84,6 +100,11 @@ const Navbar = () => {
               {label}
             </NavLink>
           ))}
+          {plan === "free" && (
+            <button onClick={() => { navigate("/pricing"); setMobileOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-sm text-amber-600 font-medium w-full">
+              <Zap className="h-4 w-4" /> Upgrade Plan
+            </button>
+          )}
           <button onClick={handleSignOut} className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground w-full">
             <LogOut className="h-4 w-4" /> Sign Out
           </button>

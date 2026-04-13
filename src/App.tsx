@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
+import AIAssistant from "@/components/AIAssistant";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -17,6 +18,8 @@ import Tournaments from "./pages/Tournaments";
 import Finances from "./pages/Finances";
 import Players from "./pages/Players";
 import SharedReport from "./pages/SharedReport";
+import Settings from "./pages/Settings";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +54,7 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Index />} />
         <Route path="/auth" element={user ? <Navigate to="/dashboard" replace /> : <Auth />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/shared" element={<SharedReport />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/player-reports" element={<ProtectedRoute><PlayerReports /></ProtectedRoute>} />
@@ -61,8 +65,10 @@ const AppRoutes = () => {
         <Route path="/tournaments" element={<ProtectedRoute><Tournaments /></ProtectedRoute>} />
         <Route path="/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
         <Route path="/players" element={<ProtectedRoute><Players /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      {user && <AIAssistant />}
     </>
   );
 };
