@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
   ClipboardList, Swords, FileText, Activity, Dumbbell,
-  Trophy, DollarSign, ArrowRight, Plus, Building2, Users
+  Trophy, DollarSign, ArrowRight, Plus, Building2, Users, Video
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -67,6 +67,7 @@ const Dashboard = () => {
     { label: "Player Roster", desc: "Manage your player database", icon: Users, path: "/players", color: "text-primary" },
     { label: "Player Reports", desc: "AI-powered progress reports", icon: ClipboardList, path: "/player-reports", color: "text-emerald-600" },
     { label: "Match Reports", desc: "Tactical match analysis", icon: Swords, path: "/match-reports", color: "text-blue-600" },
+    { label: "Video Analysis", desc: "AI-powered game footage analysis", icon: Video, path: "/video-analysis", color: "text-indigo-600" },
     { label: "Contracts", desc: "Player, coach & sponsorship contracts", icon: FileText, path: "/contracts", color: "text-purple-600" },
     { label: "Injury Tracker", desc: "Medical records & recovery", icon: Activity, path: "/injuries", color: "text-red-500" },
     { label: "Training", desc: "Session planning & drills", icon: Dumbbell, path: "/training", color: "text-amber-600" },
