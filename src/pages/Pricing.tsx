@@ -15,7 +15,7 @@ const plans = [
       "3 AI match reports/month",
       "Basic roster, injury log, attendance",
       "Watermarked PDF exports",
-      "SportDoc logo on PDFs",
+      "SportVault logo on PDFs",
     ],
     excluded: ["No contract builder", "No video uploads"],
     cta: "Get Started Free", ctaVariant: "outline" as const,
@@ -58,7 +58,7 @@ const faqs = [
   { q: "Can I switch plans anytime?", a: "Yes. Upgrades apply immediately. Downgrades apply from the next billing cycle." },
   { q: "What sports does this cover?", a: "30+ sports including cricket, football, kabaddi, badminton, basketball, hockey, athletics, tennis, table tennis, boxing, wrestling, gymnastics, swimming, and more." },
   { q: "Do my players' reports stay if I downgrade?", a: "Yes. All your data is always yours. You just lose access to generating new ones beyond the free plan limits." },
-  { q: "Is this good for pro clubs too?", a: "Absolutely. Our Pro plan is built for serious academies and professional clubs. Enterprise pricing is available for ISL clubs and state associations — email us at enterprise@sportdoc.in" },
+  { q: "Is this good for pro clubs too?", a: "Absolutely. Our Pro plan is built for serious academies and professional clubs. Enterprise pricing is available for ISL clubs and state associations — email us at enterprise@sportvault.in" },
 ];
 
 const Pricing = () => {
@@ -68,11 +68,10 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Public Nav */}
       {!user && (
         <nav className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b">
           <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-14">
-            <button onClick={() => navigate("/")} className="font-display font-extrabold text-lg text-primary">SportDoc</button>
+            <button onClick={() => navigate("/")} className="font-display font-extrabold text-lg text-primary">SportVault</button>
             <div className="flex items-center gap-4">
               <button onClick={() => navigate("/")} className="text-sm text-muted-foreground hover:text-foreground">Home</button>
               <button className="text-sm font-medium text-primary">Pricing</button>
@@ -85,11 +84,10 @@ const Pricing = () => {
 
       <div className="max-w-5xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="font-display text-4xl font-extrabold text-foreground">Simple, honest pricing. No setup fees. Cancel anytime.</h1>
+          <h1 className="font-display text-4xl font-extrabold text-foreground">Simple pricing. No setup fees. Your data, always yours.</h1>
           <p className="text-muted-foreground mt-3 max-w-xl mx-auto">Start free. Upgrade when you're ready. Every plan includes AI-powered sports documentation for 30+ sports.</p>
         </div>
 
-        {/* Plan Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {plans.map((p) => (
             <div key={p.name} className={`rounded-xl border-2 bg-card p-6 relative ${p.color}`}>
@@ -125,7 +123,6 @@ const Pricing = () => {
           ))}
         </div>
 
-        {/* Trust Row */}
         <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground mb-16">
           <span>✓ No credit card for free plan</span>
           <span>✓ UPI, cards & net banking</span>
@@ -133,7 +130,6 @@ const Pricing = () => {
           <span>✓ No setup fees</span>
         </div>
 
-        {/* FAQ */}
         <div className="max-w-2xl mx-auto">
           <h2 className="font-display text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
           <div className="space-y-4">

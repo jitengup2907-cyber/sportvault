@@ -89,11 +89,11 @@ const UpgradeModal = ({ open, onOpenChange, message, onSuccess }: UpgradeModalPr
         key: keyId,
         amount,
         currency,
-        name: "SportDoc",
+        name: "SportVault",
         description: `${planLabel} Plan — Monthly Subscription`,
         order_id: orderId,
         prefill: { email: user.email },
-        theme: { color: "#1D9E75" },
+        theme: { color: "#1B4D3E" },
         handler: async (response: any) => {
           const verifyRes = await fetch(`${supabaseUrl}/functions/v1/verify-razorpay-payment`, {
             method: "POST",

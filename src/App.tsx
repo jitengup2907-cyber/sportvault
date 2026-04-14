@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import PlayerReports from "./pages/PlayerReports";
 import MatchReports from "./pages/MatchReports";
+import VideoAnalysis from "./pages/VideoAnalysis";
 import Contracts from "./pages/Contracts";
 import Injuries from "./pages/Injuries";
 import Training from "./pages/Training";
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/player-reports" element={<ProtectedRoute><PlayerReports /></ProtectedRoute>} />
         <Route path="/match-reports" element={<ProtectedRoute><MatchReports /></ProtectedRoute>} />
+        <Route path="/video-analysis" element={<ProtectedRoute><VideoAnalysis /></ProtectedRoute>} />
         <Route path="/contracts" element={<ProtectedRoute><Contracts /></ProtectedRoute>} />
         <Route path="/injuries" element={<ProtectedRoute><Injuries /></ProtectedRoute>} />
         <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
