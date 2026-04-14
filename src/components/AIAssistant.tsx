@@ -21,7 +21,7 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
 const AIAssistant = ({ academyName, sport, playerCount }: AIAssistantProps) => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hi Coach! 👋 Ask me anything — training plans, tactics, contract help, injury advice, or sport rules for any of our 30+ sports." },
+    { role: "assistant", content: "Hi! I'm SportVault AI — ask me anything about training, tactics, contracts, rules, or player development across any of our 30+ sports." },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -118,7 +118,7 @@ const AIAssistant = ({ academyName, sport, playerCount }: AIAssistantProps) => {
             <div className="flex items-center justify-between px-4 py-3 border-b bg-primary text-primary-foreground">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-green-300 animate-pulse" />
-                <span className="font-bold text-sm">SportDoc AI</span>
+                <span className="font-bold text-sm">SportVault AI</span>
               </div>
               <button onClick={() => setOpen(false)}><X className="h-4 w-4" /></button>
             </div>
@@ -166,7 +166,7 @@ const AIAssistant = ({ academyName, sport, playerCount }: AIAssistantProps) => {
       <button
         onClick={() => setOpen(!open)}
         className="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105"
-        style={{ backgroundColor: "#1D9E75" }}
+        style={{ backgroundColor: "#1B4D3E" }}
       >
         {open ? <X className="h-6 w-6 text-white" /> : <MessageCircle className="h-6 w-6 text-white" />}
       </button>

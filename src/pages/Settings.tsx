@@ -63,7 +63,7 @@ const Settings = () => {
     setSaving(false);
   };
 
-  const referralLink = user ? `sportdoc.in/ref/${user.id.slice(0, 8)}` : "";
+  const referralLink = user ? `sportvault.in/ref/${user.id.slice(0, 8)}` : "";
 
   const planBadge = plan === "pro" ? "bg-blue-500" : plan === "club" ? "bg-primary" : "bg-muted-foreground";
 
@@ -128,7 +128,7 @@ const Settings = () => {
             </Button>
           )}
           {plan !== "free" && (
-            <a href="mailto:support@sportdoc.in" className="text-sm text-primary hover:underline">Manage Billing</a>
+            <a href="mailto:support@sportvault.in" className="text-sm text-primary hover:underline">Manage Billing</a>
           )}
         </div>
       </div>

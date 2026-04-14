@@ -1,6 +1,6 @@
 import { SavedReport } from "@/types/player";
 
-const STORAGE_KEY = "coachreport_history";
+const STORAGE_KEY = "sportvault_history";
 
 export function getSavedReports(): SavedReport[] {
   try {

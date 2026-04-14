@@ -89,7 +89,7 @@ const SharedReport = () => {
         </motion.div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Powered by CoachReport · The Complete Sports Documentation Platform
+          Powered by SportVault · Every Sport. Every Record. One Vault.
         </p>
       </div>
     </div>
