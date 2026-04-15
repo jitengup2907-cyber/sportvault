@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
 import {
   ClipboardList, Swords, FileText, Activity, Dumbbell,
-  Trophy, DollarSign, LayoutDashboard, LogOut, Menu, X, Users, Settings, Zap
+  Trophy, DollarSign, LayoutDashboard, LogOut, Menu, X, Users, Settings, Zap, Video
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ const links = [
   { to: "/players", label: "Roster", icon: Users },
   { to: "/player-reports", label: "Reports", icon: ClipboardList },
   { to: "/match-reports", label: "Matches", icon: Swords },
+  { to: "/video-analysis", label: "Video", icon: Video },
   { to: "/contracts", label: "Contracts", icon: FileText },
   { to: "/injuries", label: "Injuries", icon: Activity },
   { to: "/training", label: "Training", icon: Dumbbell },
