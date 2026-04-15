@@ -14,7 +14,7 @@ const links = [
   { to: "/players", label: "Roster", icon: Users },
   { to: "/player-reports", label: "Reports", icon: ClipboardList },
   { to: "/match-reports", label: "Matches", icon: Swords },
-  { to: "/video-analysis", label: "Video", icon: Swords },
+  { to: "/video-analysis", label: "Video", icon: Video },
   { to: "/contracts", label: "Contracts", icon: FileText },
   { to: "/injuries", label: "Injuries", icon: Activity },
   { to: "/training", label: "Training", icon: Dumbbell },
