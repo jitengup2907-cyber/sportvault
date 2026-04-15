@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
 import {
   ClipboardList, Swords, FileText, Activity, Dumbbell,
-  Trophy, DollarSign, LayoutDashboard, LogOut, Menu, X, Users, Settings, Zap
+  Trophy, DollarSign, LayoutDashboard, LogOut, Menu, X, Users, Settings, Zap, Video
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
